@@ -10,6 +10,8 @@ public class PlayerMovement : MonoBehaviour {
 	Rigidbody playerRigidbody;
 	int floorMask;
 	float camRayLength = 100f;
+    public Camera firstPerson;
+    public Camera thirdPerson;
 
 	// Use this for initialization
 	void Awake () {
@@ -23,13 +25,21 @@ public class PlayerMovement : MonoBehaviour {
 		float h = Input.GetAxisRaw ("Horizontal");
 		float v = Input.GetAxisRaw ("Vertical");
 		// Move the player around the scene.
-		Move (h, v);
 
-		// Turn the player to face the mouse cursor.
-		Turning ();
+        if(thirdPerson.gameObject.activeSelf) {
+		    // Turn the player to face the mouse cursor.
+		    Move (h, v);
+		    Turning ();
+        }
+        else { //first person control different
+            h *= speed;
+            v *= speed;
+            h *= Time.deltaTime;
+            v *= Time.deltaTime;
+            transform.Translate(h, 0, v);
+        }
+		    Animating (h, v);
 
-		// Animate the player.
-		Animating (h, v);
 	}
 
 	void Move(float h, float v) {
@@ -40,7 +50,7 @@ public class PlayerMovement : MonoBehaviour {
 
 	void Turning() {
 		// Create a ray from the mouse cursor on screen in the direction of the camera.
-		Ray camRay = Camera.main.ScreenPointToRay (Input.mousePosition);
+		Ray camRay = thirdPerson.ScreenPointToRay (Input.mousePosition);
 
 		// Create a RaycastHit variable to store information about what was hit by the ray.
 		RaycastHit floorHit;

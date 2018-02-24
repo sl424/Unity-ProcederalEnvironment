@@ -18,12 +18,16 @@ public class PlayerHealth : MonoBehaviour
     AudioSource playerAudio;                                    // Reference to the AudioSource component.
     PlayerMovement playerMovement;                              // Reference to the player's movement.
     PlayerShooting playerShooting;                              // Reference to the PlayerShooting script.
-    bool isDead;                                                // Whether the player is dead.
+    public static bool isDead;                                                // Whether the player is dead.
     bool damaged;                                               // True when the player gets damaged.
+    GameObject gameOverObjects;
+
 
 
     void Awake ()
     {
+        gameOverObjects = GameObject.FindWithTag("ShowOnGameOver");
+
         // Setting up the references.
         anim = GetComponent <Animator> ();
         playerAudio = GetComponent <AudioSource> ();
@@ -32,6 +36,8 @@ public class PlayerHealth : MonoBehaviour
 
         // Set the initial health of the player.
         currentHealth = startingHealth;
+
+        isDead = false;
     }
 
 
@@ -67,7 +73,7 @@ public class PlayerHealth : MonoBehaviour
         healthSlider.value = currentHealth;
 
         // Play the hurt sound effect.
-        playerAudio.Play ();
+        //playerAudio.Play ();
 
         // If the player has lost all it's health and the death flag hasn't been set yet...
         if(currentHealth <= 0 && !isDead)
@@ -96,5 +102,9 @@ public class PlayerHealth : MonoBehaviour
         // Turn off the movement and shooting scripts.
         playerMovement.enabled = false;
         playerShooting.enabled = false;
+
+        Cursor.visible = true;
+        gameOverObjects.SetActive(true);
+
     }       
 }

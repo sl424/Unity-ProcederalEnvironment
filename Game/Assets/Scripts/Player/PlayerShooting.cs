@@ -32,6 +32,9 @@ public class PlayerShooting : MonoBehaviour
 
     void Update ()
     {
+        if(Time.timeScale == 0) {
+         return;    
+      }
         // Add the time since Update was last called to the timer.
         timer += Time.deltaTime;
 

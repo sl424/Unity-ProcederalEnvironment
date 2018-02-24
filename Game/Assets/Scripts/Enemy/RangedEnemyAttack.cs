@@ -2,9 +2,9 @@
 using System.Collections;
 
 
-public class EnemyAttack : MonoBehaviour
+public class RangedEnemyAttack : MonoBehaviour
 {
-	public float timeBetweenAttacks = 0.5f;     // The time in seconds between each attack.
+	public float timeBetweenAttacks = 3.0f;     // The time in seconds between each attack.
 	public int attackDamage = 10;               // The amount of health taken away per attack.
 
 	Animator anim;                              // Reference to the animator component.
@@ -14,6 +14,12 @@ public class EnemyAttack : MonoBehaviour
 	bool playerInRange;                         // Whether player is within the trigger collider and can be attacked.
 	float timer;                                // Timer for counting up to the next attack.
 
+	//
+	public GameObject StoneProjectilePrefab;
+	//private GameObject _StoneProjectile;
+	public Transform ProjectileSpawn;
+	//public float obstacleRange = 5.0f;
+
 
 	void Awake ()
 	{
@@ -22,7 +28,6 @@ public class EnemyAttack : MonoBehaviour
 		playerHealth = player.GetComponent <PlayerHealth> ();
 		enemyHealth = GetComponent<EnemyHealth>();
 		anim = GetComponent <Animator> ();
-		anim.SetBool ("PlayerIsDead", false); //testing now
 	}
 
 
@@ -34,7 +39,23 @@ public class EnemyAttack : MonoBehaviour
 			// ... the player is in range.
 			playerInRange = true;
 			anim.SetBool ("InAttackRange", playerInRange); //testing now
-
+			///
+			//Fire();
+			/*Ray ray = new Ray (transform.position, transform.forward);
+			RaycastHit hit;
+			if (Physics.SphereCast (ray, 0.75f, out hit)) {
+				GameObject hitObject = hit.transform.gameObject;
+				if (hitObject.GetComponent<PlayerHealth> ()) {
+					if (_StoneProjectile == null) {
+						_StoneProjectile = Instantiate (StoneProjectilePrefab) as GameObject;
+						_StoneProjectile.transform.position = transform.TransformPoint (Vector3.forward * 1.5f);
+						_StoneProjectile.transform.rotation = transform.rotation;
+					}
+				} else if (hit.distance < obstacleRange) {
+					float angle = Random.Range (-110, 110);
+					transform.Rotate (0, angle, 0);
+				}
+			}*/
 		}
 	}
 
@@ -46,8 +67,10 @@ public class EnemyAttack : MonoBehaviour
 		{
 			// ... the player is no longer in range.
 			playerInRange = false;
-			anim.SetBool ("InAttackRange", playerInRange); //testing now
-		
+			anim.SetBool ("InAttackRange", playerInRange); 
+
+
+
 		}
 	}
 
@@ -62,13 +85,12 @@ public class EnemyAttack : MonoBehaviour
 		{
 			// ... attack.
 			Attack ();
+			Fire(); //testing 
 		}
 
 		// If the player has zero or less health...
 		if(playerHealth.currentHealth <= 0)
 		{
-            
-			anim.SetBool ("PlayerIsDead", true); //testing now
 			// ... tell the animator the player is dead.
 			anim.SetTrigger ("PlayerDead");
 		}
@@ -87,5 +109,20 @@ public class EnemyAttack : MonoBehaviour
 			// ... damage the player.
 			playerHealth.TakeDamage (attackDamage);
 		}
+	}
+
+	void Fire()
+	{
+		// Create the Bullet from the Bullet Prefab
+		var bullet = (GameObject)Instantiate (
+			StoneProjectilePrefab,
+			ProjectileSpawn.position,
+			ProjectileSpawn.rotation);
+
+		// Add velocity to the bullet
+		bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * 60;
+
+		// Destroy the bullet after 2 seconds
+		Destroy(bullet, 2.0f);
 	}
 }

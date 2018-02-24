@@ -4,28 +4,35 @@ using System.Collections.Generic;
 
 public class MeshGenerator : MonoBehaviour {
 
-    public SquareGrid sq;
+    public SquareMap sq;
     public MeshFilter walls;
-    public MeshFilter cave;
+    public MeshFilter floor;
+    public float wallHeight = 5;
 
+    /* vertices and triangles needed for mesh generation */
     List<Vector3> vertices;
     List<int> triangles;
     
+    /* 
+     * Mesh  helper data structures for checking outline */
     List<List<int>> outlines = new List<List<int>>();
     HashSet<int> checkedList = new HashSet<int>();
     Dictionary<int,List<Triangle>> tD = new Dictionary<int,List<Triangle>>();
 
-   // int newMesh= 0;
     MeshCollider wallCollider;
     int newWallMesh= 0;
     MeshCollider wallCollider2;
 
+    /*
+     * Genereate the floor mesh using the randomly generate map
+     * and create the vertical wall
+     */
     public void GenerateMesh(int[,] map, float squareSize){
         outlines.Clear();
         checkedList.Clear();
         tD.Clear();
 
-        sq =  new SquareGrid(map, squareSize);
+        sq =  new SquareMap(map, squareSize);
         vertices = new List<Vector3>();
         triangles = new List<int>();
 
@@ -34,80 +41,88 @@ public class MeshGenerator : MonoBehaviour {
                 TrigulateSquare(sq.squares[x,y]);
             }
         }
-        Mesh mesh = new Mesh();
-//        GetComponent<MeshFilter>().mesh = mesh;
-        cave.mesh = mesh;
 
+        Mesh mesh = new Mesh();
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
 
+        floor.mesh = mesh;
         createWallMesh();
-
-
-        /*
-        if (newMesh==0){
-            //MeshCollider wallCollider = walls.gameObject.AddComponent<MeshCollider>();
-            wallCollider = walls.gameObject.AddComponent<MeshCollider>();
-            newMesh=1;
-        }
-        wallCollider.sharedMesh = mesh;
-        */
     }
 
 
+    /*
+     * For each vertice in the outline, create a square
+     * and create two triangles for each square.
+     */
     void createWallMesh(){
-        calculateMesh();
+        calculateMesh(); // generate floor mesh and outlines list
 
-        List<Vector3> wallVertices = new List<Vector3>();
-        List<int> wallTriangles = new List<int>();
-        Mesh wallMesh = new Mesh();
-        float wallHeight = 5;
+        /* Mesh components
+         * wv -- wall vertices
+         * wt -- wall triangles
+         */
+        List<Vector3> wv = new List<Vector3>();
+        List<int> wt = new List<int>();
 
-        // using the outline to create a square vertices and
-        // 2 triangles 
+
         foreach(List<int> outline in outlines){
             for(int i =0; i < outline.Count-1; i++){
-                int start = wallVertices.Count;
+                int start = wv.Count;
 
-                // 4 vertices and 2 triangles for each square
-                wallVertices.Add(vertices[outline[i]]);//left
-                wallVertices.Add(vertices[outline[i+1]]);//right
-                wallVertices.Add(vertices[outline[i]]-Vector3.up*wallHeight);//left-top
-                wallVertices.Add(vertices[outline[i+1]]-Vector3.up*wallHeight);//right-top
+                //create 4 vertices for each outline vertex
+                wv.Add(vertices[outline[i]]); //vertex i
+                wv.Add(vertices[outline[i+1]]);//vertex i +1
+                wv.Add(vertices[outline[i]]-Vector3.up*wallHeight);//vertex i at wall height
+                wv.Add(vertices[outline[i+1]]-Vector3.up*wallHeight);//vertext i+1 at wall height
 
-                wallTriangles.Add(start+0);
-                wallTriangles.Add(start+2);
-                wallTriangles.Add(start+3);
+                //triangle 1
+                wt.Add(start+0);
+                wt.Add(start+2);
+                wt.Add(start+3);
 
-                wallTriangles.Add(start+3);
-                wallTriangles.Add(start+1);
-                wallTriangles.Add(start+0);
+                //Triangle 2
+                wt.Add(start+3);
+                wt.Add(start+1);
+                wt.Add(start+0);
             }
         }
 
-        wallMesh.vertices = wallVertices.ToArray();
-        wallMesh.triangles = wallTriangles.ToArray();
+        Mesh wallMesh = new Mesh();
+        wallMesh.vertices = wv.ToArray();
+        wallMesh.triangles = wt.ToArray();
         walls.mesh = wallMesh;
 
-        // create MeshCollider
+        // bool flag used to add component if needed
         if (newWallMesh==0){
-            //MeshCollider wallCollider = walls.gameObject.AddComponent<MeshCollider>();
             wallCollider2 = walls.gameObject.AddComponent<MeshCollider>();
             newWallMesh=1;
         }
-        //wallCollider = walls.gameObject.AddComponent<MeshCollider>();
         wallCollider2.sharedMesh=wallMesh;
     }
 
 
-    // These are all the possible combinations of Triangle for each
-    // configuration value
+    /*  Trianglulate the following square configuration
+     *    * - * 
+     *    -   -
+     *    * - *
+     * There are 4 main control nodes for a total of 16 different
+     * combinations/configrations.
+     *
+     * all Triangles vertices are selected in clock-wise direction
+     *
+     * case values corresponde to the 4 states of the control nodes
+     *   x - 8
+     *   x - 4
+     *   x - 2
+     *   x - 1
+     *
+     */
     void TrigulateSquare(Square s){
         switch(s.config){
             case 0: 
                 break;
-            /* 1point cases*/
             case 1:
                 MeshFromPoints(s.midLeft, s.midBottom, s.bottomLeft);
                 break;
@@ -120,8 +135,6 @@ public class MeshGenerator : MonoBehaviour {
             case 8:
                 MeshFromPoints(s.topLeft, s.midTop, s.midLeft);
                 break;
-
-            /* 2points cases*/
             case 3:
                 MeshFromPoints(s.midRight, s.bottomRight, s.bottomLeft, s.midLeft);
                 break;
@@ -140,7 +153,6 @@ public class MeshGenerator : MonoBehaviour {
             case 10:
                 MeshFromPoints(s.topLeft, s.midTop, s.midRight, s.bottomRight, s.midBottom, s.midLeft);
                 break;
-            /* 3points cases*/
             case 7:
                 MeshFromPoints(s.midTop, s.topRight, s.bottomRight, s.bottomLeft, s.midLeft);
                 break;
@@ -153,25 +165,19 @@ public class MeshGenerator : MonoBehaviour {
             case 14:
                 MeshFromPoints(s.topLeft, s.topRight, s.bottomRight, s.midBottom, s.midLeft);
                 break;
-
-            /* 4points cases*/
             case 15:
                 MeshFromPoints(s.topLeft, s.topRight, s.bottomRight, s.bottomLeft);
-                checkedList.Add(s.topLeft.index);
-                checkedList.Add(s.topRight.index);
-                checkedList.Add(s.bottomRight.index);
-                checkedList.Add(s.bottomLeft.index);
                 break;
 
         }
     }
 
-    // create all the triangle meshes from a list of points 
-    // in clockwise direction.
+    /*
+     * In a close-wise fashion, create all the triangles from
+     * the points array
+     */
     void MeshFromPoints(params Node[] points){
-
         assignVertices(points);
-
         if (points.Length >= 3)
             createTriangle(points[0], points[1], points[2]);
         if (points.Length >= 4)
@@ -182,6 +188,10 @@ public class MeshGenerator : MonoBehaviour {
             createTriangle(points[0], points[4], points[5]);
     }
 
+    /*
+     * Add point position to the vertices array
+     * and assign an index id to track each point
+     */
     void assignVertices(Node[] points){
         for(int i = 0; i < points.Length; i++){
             if (points[i].index == -1){
@@ -191,6 +201,12 @@ public class MeshGenerator : MonoBehaviour {
         }
     }
 
+    /*
+     * add points to the triangles array
+     * create triangle using the 3 points
+     * link the triangle to its correspoding points
+     * so that its possible to check if they belong to the same triangle.
+     */
     void createTriangle(Node a, Node b, Node c){
         triangles.Add(a.index);
         triangles.Add(b.index);
@@ -203,8 +219,10 @@ public class MeshGenerator : MonoBehaviour {
 
     }
 
-    //get all neighboring triangles that uses the vertex and return 
-    //a valid outline points to follow.
+    /*
+     * Goes through each point and check all the triangles it belong
+     * to and return a valid outline vertex if found.
+     */
     int getNext(int vertex){
         List<Triangle> container = tD[vertex];
 
@@ -222,8 +240,11 @@ public class MeshGenerator : MonoBehaviour {
         return -1;
     }
 
-    // go through each vertices and create an array of List 
-    // each containing the points that forms an closed loop outline
+    /*
+     * Recursively follow each vertice points and 
+     * get groups of outline points
+     * that forms the outline edges.
+     */
     void calculateMesh(){
         for(int index = 0; index < vertices.Count; index++){
             if (!checkedList.Contains(index)){
@@ -241,8 +262,7 @@ public class MeshGenerator : MonoBehaviour {
         }
     }
 
-    // a recursive call that search and add valid outline points
-    // to the array until it returns back to itself.
+    /* Recursive helper function */
     void followNext(int index, int outlineIndex){
         outlines[outlineIndex].Add(index);
         checkedList.Add(index);
@@ -252,25 +272,20 @@ public class MeshGenerator : MonoBehaviour {
         }
     }
 
-    // search through the dictionary book and get
-    // all the triangles vertex A belong to and check if 
-    // vertex B formed an edge line
-    // return true if they shared an edge only 1 time.
+    /* check if two vertices belong to the same triangle group or not */
     bool isOutline(int vertexA, int vertexB){
         List<Triangle> containsA = tD[vertexA];
         int shared = 0;
         for (int i = 0; i < containsA.Count; i++){
             if (containsA[i].Contains(vertexB)) {
                 shared++;
-                //if (shared > 1) {break;}
+                if (shared > 1) {break;}
             }
         }
-        bool isTrue = shared==1;
-        //return shared == 1;
-        return isTrue;
+        return shared == 1;
     }
 
-    //data structure for triangle and references its 3 points
+    /* Triangle struct to track its 3 vertices */
     struct Triangle{
         public int indexA;
         public int indexB;
@@ -285,6 +300,7 @@ public class MeshGenerator : MonoBehaviour {
             vertices[0] = a;
             vertices[1] = b;
             vertices[2] = c;
+
         }
 
         public int this[int i]{
@@ -298,6 +314,10 @@ public class MeshGenerator : MonoBehaviour {
         }
     }
 
+    /* link each triangle to its vertices
+     * A vertex can be connected to a list of triangles
+     * and must be checked.
+     */
     void addToDict(int indexKey, Triangle triangle){
         if (tD.ContainsKey(indexKey)){
             tD[indexKey].Add(triangle);
@@ -309,12 +329,14 @@ public class MeshGenerator : MonoBehaviour {
     }
 
 
-
-    // Take the point map array and create square 2d array of control nodes
-    public class SquareGrid{
+    /*
+     * Use the randomly generated map, 
+     * create the square for each point that are true/on
+     */
+    public class SquareMap{
         public Square[,] squares;
 
-        public SquareGrid(int[,] map, float squareSize){
+        public SquareMap(int[,] map, float squareSize){
             int nodeCountX  = map.GetLength(0);
             int nodeCountY = map.GetLength(1);
             float mapWidth = nodeCountX*squareSize;
@@ -344,17 +366,12 @@ public class MeshGenerator : MonoBehaviour {
         }
     }
 
-    // set up nodes to its respective control Node and assign the 
-    //  numerical value to each configuration.
     public class Square{
         public ControlNode topLeft, topRight, bottomLeft, bottomRight;
         public Node midTop, midRight, midLeft, midBottom;
         public int config;
 
-        public Square (ControlNode _topLeft, 
-                       ControlNode _topRight, 
-                       ControlNode _bottomRight, 
-                       ControlNode _bottomLeft){
+        public Square (ControlNode _topLeft, ControlNode _topRight, ControlNode _bottomRight, ControlNode _bottomLeft){
             topLeft = _topLeft;
             topRight = _topRight;
             bottomLeft = _bottomLeft;
@@ -377,18 +394,6 @@ public class MeshGenerator : MonoBehaviour {
 
     }
 
-    /* Node and Control Node
-      _________________
-
-      + - +
-      -   -
-      + - + 
-      _________________
-      
-      + > control node, references the  4 points of each square and contains 2 additional nodes
-      - > node, auxillary nodes used to form triangles
-    */
-
     public class Node {
         public Vector3 position;
         public int index = -1;
@@ -410,3 +415,19 @@ public class MeshGenerator : MonoBehaviour {
     }
 
 }
+
+        /*
+        if (newMesh==0){
+            //MeshCollider wallCollider = walls.gameObject.AddComponent<MeshCollider>();
+            wallCollider = walls.gameObject.AddComponent<MeshCollider>();
+            newMesh=1;
+        }
+        wallCollider.sharedMesh = mesh;
+        */
+
+/*
+                checkedList.Add(s.topLeft.index);
+                checkedList.Add(s.topRight.index);
+                checkedList.Add(s.bottomRight.index);
+                checkedList.Add(s.bottomLeft.index);
+                */
