@@ -15,6 +15,7 @@ public class PlayerShooting : MonoBehaviour
     ParticleSystem gunParticles;                    // Reference to the particle system.
     LineRenderer gunLine;                           // Reference to the line renderer.
     AudioSource gunAudio;                           // Reference to the audio source.
+    
     Light gunLight;                                 // Reference to the light component.
     float effectsDisplayTime = 0.2f;                // The proportion of the timeBetweenBullets that the effects will display for.
 
@@ -51,6 +52,20 @@ public class PlayerShooting : MonoBehaviour
             // ... disable the effects.
             DisableEffects ();
         }
+    }
+
+    // changes shoot speed  
+    public void updateShootSpeed(float speed){
+        timeBetweenBullets = speed;        // The time between each shot.
+    }
+
+    // change bullet damage
+    public void updateDamage(int damage){
+        damagePerShot = damage;                  // The damage inflicted by each bullet.
+    }
+    // change bullet sound
+    public void switchGunAudio(AudioClip clip){
+            gunAudio.clip = clip; 
     }
 
     public void DisableEffects ()

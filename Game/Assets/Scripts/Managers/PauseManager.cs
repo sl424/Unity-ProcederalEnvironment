@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour {
     GameObject pauseObjects;
@@ -82,7 +83,17 @@ public class PauseManager : MonoBehaviour {
 
     //Restarts the current Level
     public void Restart(){
-        Application.LoadLevel(1);
+
+		Scene currentScene = SceneManager.GetActiveScene();
+		string sceneName = currentScene.name;
+
+		if (sceneName == "level3") {
+			Application.LoadLevel (3);
+		} else if (sceneName == "level5") {
+			Application.LoadLevel (5);
+		} else {
+			Application.LoadLevel (1);
+		}
     }
 
     // go to main menu

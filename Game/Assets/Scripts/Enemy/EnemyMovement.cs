@@ -17,6 +17,15 @@ public class EnemyMovement : MonoBehaviour
 		playerHealth = player.GetComponent <PlayerHealth> ();
 		enemyHealth = GetComponent <EnemyHealth> ();
 		nav = GetComponent <NavMeshAgent> ();
+
+        /*
+        nav.Warp(transform.position + Vector3.up*10);
+        RaycastHit hit;
+        if(Physics.Raycast(transform.position, Vector3.down, out hit, 100f)){
+            //Debug.Log(hit.point);
+            nav.Warp(hit.point);
+        }
+        */
 	}
 
 

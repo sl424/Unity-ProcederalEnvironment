@@ -23,7 +23,7 @@ public class FlexibleUIText : FlexibleUI
         txt = GetComponent<Text>();
 
 
-		txt = GetComponent<Text>();
+		//txt = GetComponent<Text>();
 
 		txt.font = skinData.m_font;
 

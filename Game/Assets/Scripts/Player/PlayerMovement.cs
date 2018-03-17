@@ -18,6 +18,15 @@ public class PlayerMovement : MonoBehaviour {
 		floorMask = LayerMask.GetMask ("Floor");
 		anim = GetComponent <Animator> ();
 		playerRigidbody = GetComponent<Rigidbody> ();
+
+        transform.Translate(Vector3.up*10);
+        RaycastHit hit;
+        if(Physics.Raycast(transform.position, Vector3.down, out hit, 100f)){
+            //Debug.Log(hit.point);
+            transform.position = hit.point;
+            //transform.Translate(hit.point);
+            //transform.Translate(Vector3.down*(10-hit.point.y));
+        }
 	}
 	
 	// Update is called once per frame
@@ -41,6 +50,11 @@ public class PlayerMovement : MonoBehaviour {
 		    Animating (h, v);
 
 	}
+
+
+    public void changeMovementSpeed(float s) {
+	    speed = s;
+    }
 
 	void Move(float h, float v) {
 		movement.Set (h, 0f, v);

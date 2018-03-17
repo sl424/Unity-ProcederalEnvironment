@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public class MapGenerator : MonoBehaviour {
 
-    public int clearance = 20;
+    int clearance = 5;
     public string seed;
     public bool useRandomSeed;
     public int width;
@@ -26,9 +27,40 @@ public class MapGenerator : MonoBehaviour {
 
     int [,] map;
     List<GameObject> trees = new List<GameObject>();
-    string[] treetypes = {"Tree_1", "Tree_2", "Tree_3"};
+    string[] treetypes = {};
+    string treelog;
+    string extra = "";
+
+    int midx;
+    int midy;
+    int [,] borderMap;
+
 
     void Awake(){
+        Scene scene = SceneManager.GetActiveScene();
+        switch((int)scene.buildIndex){                                         
+            case 1:                                                            
+                string[] obj  = {"Tree_1", "Tree_2", "Tree_3"};
+                treelog = "Log_3";
+                treetypes = obj;
+                break;
+            case 3:                                                             
+                string[] obj3 = {"Mounting_1", "Mounting_2", "Mounting_3"};
+                treetypes = obj3;
+                treelog = "Flat_Rock_01";
+                extra = "Flat_Cactus_02";
+                //treelog = "Log_3";
+                break;
+
+            case 5:                                                             
+                string[] obj5 = {"SnowStone1", "SnowStone2", "SnowStone3"};
+                treetypes = obj5;
+                extra = "Pine_Snowy1";
+                treelog = "SnowStone10";
+                //treelog = "Log_3";
+                break;
+        }                                                                                                                                                                                      
+
         SpawnPoints = gm.GetComponentInChildren<GameManager>().spawnPoints;
         GenerateMap();
         //floor.BuildNavMesh();
@@ -50,8 +82,8 @@ public class MapGenerator : MonoBehaviour {
         map = new int[width,height];
         randomFillMap();
 
-        int midx = width/2;
-        int midy = height/2;
+        midx = width/2;
+        midy = height/2;
 
         //clear space for the player at 0,0,0
         for(int i = -clearance; i < clearance; i++){
@@ -62,6 +94,8 @@ public class MapGenerator : MonoBehaviour {
 
         //clear space for the enemy spawn points
         int spx, spy;// spz;
+        int path_margin = 2;
+
         for(int k = 0; k < SpawnPoints.GetLength(0); k++){
             spx = (int)SpawnPoints[k].position.x;
             spy = (int)SpawnPoints[k].position.z; // z axis is y in this 2d coordinate
@@ -69,14 +103,38 @@ public class MapGenerator : MonoBehaviour {
             //
             for(int i = -clearance; i < clearance; i++){
                 for(int j = -clearance; j < clearance; j++){
-                    map[spx+midx,spy+midy] = 0;
+                    map[spx+midx+i,spy+midy+j] = 0;
                 }
             }
             /*
                GameObject sp = Instantiate(Resources.Load("Rock_1"),
                new Vector3(spx, 0, spy), Quaternion.identity) as GameObject;
                */
+
+            //connect path enemy spawn points to the player
+            int flipx;
+            int flipy;
+            int tempmid;
+
+            if (spx+midx < midx ) {flipx = 1;} else { flipx = -1;}
+            if (spy+midy < midy ) {flipy = 1;} else { flipy = -1;}
+
+            for (int j = spx+midx; j != midx; j += flipx){
+                for (int l = -path_margin; l < path_margin; l++){
+                    map[j, spy+midy+l] = 0;
+                }
+            }
+            
+            for (int j = spy+midy; j != midy; j += flipy){
+                for (int l = -path_margin; l < path_margin; l++){
+                    map[midx+l, j] = 0;
+                }
+            }
         }
+
+
+        
+
 
         for (int i = 0; i < smoothFactor; i++){
             SmoothMap();
@@ -84,7 +142,7 @@ public class MapGenerator : MonoBehaviour {
 
 
         //add border to the map
-        int[,] borderMap = new int[width + borderSize*2, height +borderSize*2];
+        borderMap = new int[width + borderSize*2, height +borderSize*2];
         for(int x = 0; x < borderMap.GetLength(0); x++){
             for(int y = 0; y < borderMap.GetLength(1); y++){
                 if(x>=borderSize && x < width && y >=borderSize && y < height){
@@ -94,6 +152,23 @@ public class MapGenerator : MonoBehaviour {
                 }
             }
         }
+
+        //setobj();
+
+        MeshGenerator meshGen = GetComponent<MeshGenerator>();
+        meshGen.GenerateMesh(borderMap, sz);
+    }
+
+    Vector3 returnHeight(Vector3 pos){                                         
+        RaycastHit hit;                                                        
+        if (Physics.Raycast(pos+Vector3.up*10, Vector3.down, out hit,100f)){
+            //Debug.Log(hit.point);                                            
+            return hit.point;                                                  
+        }                                                                      
+        return pos;
+    }
+
+    public void setobj(){
 
         // randomly set trees
         int other=0;
@@ -109,26 +184,31 @@ public class MapGenerator : MonoBehaviour {
                         GameObject myTreeInstance =
                             Instantiate(Resources.Load(
                                         treetypes[randomGen.Next(0,3)]),
-                                    new Vector3(xloc, 0, yloc),
+                                    returnHeight(new Vector3(xloc, 2, yloc)),
                                     Quaternion.identity) as GameObject;
                         trees.Add(myTreeInstance);
                         myTreeInstance.transform.SetParent(treegroup.transform);
-                    } else if (other%2==0) {
+                    } else if (other%2==0 && other%17!=0) {
                         //} if (GetNeighborCount(x,y) >= 3) {
                         GameObject terrainInst =
-                            Instantiate(Resources.Load("Log_3"), 
-                                    new Vector3(xloc, 0, yloc),
+                            Instantiate(Resources.Load(treelog), 
+                                    returnHeight(new Vector3(xloc, 2, yloc)),
                                     Quaternion.identity) as GameObject;
                     trees.Add(terrainInst);
                     terrainInst.transform.SetParent(treegroup.transform);
                 }
+                    else if (other%11==0 && extra!=""){
+                        GameObject terrainInst =
+                            Instantiate(Resources.Load(extra), 
+                                    returnHeight(new Vector3(xloc, 2, yloc)),
+                                    Quaternion.identity) as GameObject;
+                    trees.Add(terrainInst);
+                    terrainInst.transform.SetParent(treegroup.transform);
+                    }
                 }
             }
         }
 
-
-        MeshGenerator meshGen = GetComponent<MeshGenerator>();
-        meshGen.GenerateMesh(borderMap, sz);
     }
 
     void randomFillMap(){

@@ -61,6 +61,14 @@ public class PlayerHealth : MonoBehaviour
     }
 
 
+
+    // gives player full health
+    public void fullHealth() {
+        currentHealth = 100; 
+        healthSlider.value = currentHealth;
+    }
+
+
     public void TakeDamage (int amount)
     {
         // Set the damaged flag so the screen will flash.

@@ -6,15 +6,15 @@ public class CameraManager : MonoBehaviour
     public GameObject FirstPersonCamera; 
     public GameObject ThirdPersonCamera; 
     public GameObject crosshair; 
-    public bool viewIsThird;
+    public bool viewIsThird = true;
 
     void Start ()
     {
         FirstPersonCamera.gameObject.active = false;
         ThirdPersonCamera.gameObject.active = true;
         crosshair.gameObject.active = false;
-        viewIsThird = true;
-            if (viewIsThird) {
+        //viewIsThird = true;
+            if (!viewIsThird) {
                 FirstPersonCamera.gameObject.active = true;
                 ThirdPersonCamera.gameObject.active = false;
                 crosshair.gameObject.active = true;

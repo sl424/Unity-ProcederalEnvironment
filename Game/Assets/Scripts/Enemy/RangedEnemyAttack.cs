@@ -6,6 +6,9 @@ public class RangedEnemyAttack : MonoBehaviour
 {
 	public float timeBetweenAttacks = 3.0f;     // The time in seconds between each attack.
 	public int attackDamage = 10;               // The amount of health taken away per attack.
+	public float playerDistance; //testing now
+	public Transform playert; //testing now
+	public Transform tt; //testing now
 
 	Animator anim;                              // Reference to the animator component.
 	GameObject player;                          // Reference to the player GameObject.
@@ -28,17 +31,20 @@ public class RangedEnemyAttack : MonoBehaviour
 		playerHealth = player.GetComponent <PlayerHealth> ();
 		enemyHealth = GetComponent<EnemyHealth>();
 		anim = GetComponent <Animator> ();
+		//
+		tt = this.transform;
+		playert = GameObject.FindGameObjectWithTag("Player").transform;
 	}
 
 
-	void OnTriggerEnter (Collider other)
+	/*void OnTriggerEnter (Collider other)
 	{
 		// If the entering collider is the player...
 		if(other.gameObject == player)
 		{
 			// ... the player is in range.
 			playerInRange = true;
-			anim.SetBool ("InAttackRange", playerInRange); //testing now
+			//anim.SetBool ("InAttackRange", playerInRange); 
 			///
 			//Fire();
 			/*Ray ray = new Ray (transform.position, transform.forward);
@@ -55,7 +61,7 @@ public class RangedEnemyAttack : MonoBehaviour
 					float angle = Random.Range (-110, 110);
 					transform.Rotate (0, angle, 0);
 				}
-			}*/
+			}
 		}
 	}
 
@@ -72,20 +78,39 @@ public class RangedEnemyAttack : MonoBehaviour
 
 
 		}
-	}
+	} */
 
 
 	void Update ()
 	{
+		//
+
+		playerDistance = Vector3.Distance(tt.position, playert.position);
+		if (playerDistance <= 12f)
+		{
+			playerInRange = true;
+		}
+		if (playerDistance > 12f)
+		{
+			playerInRange = false;
+		}
+
+
+
+
+		//
 		// Add the time since Update was last called to the timer.
 		timer += Time.deltaTime;
 
 		// If the timer exceeds the time between attacks, the player is in range and this enemy is alive...
-		if(timer >= timeBetweenAttacks && playerInRange /*&& enemyHealth.currentHealth > 0*/)
+		if(timer >= timeBetweenAttacks && playerInRange && enemyHealth.currentHealth > 0)
 		{
 			// ... attack.
-			Attack ();
+			//anim.SetBool ("InAttackRange", playerInRange);
+			anim.SetTrigger ("InRange");
 			Fire(); //testing 
+			Attack ();
+
 		}
 
 		// If the player has zero or less health...
@@ -120,7 +145,7 @@ public class RangedEnemyAttack : MonoBehaviour
 			ProjectileSpawn.rotation);
 
 		// Add velocity to the bullet
-		bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * 60;
+		bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * 40;
 
 		// Destroy the bullet after 2 seconds
 		Destroy(bullet, 2.0f);
