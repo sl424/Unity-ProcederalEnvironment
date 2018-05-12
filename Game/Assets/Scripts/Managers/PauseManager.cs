@@ -88,17 +88,17 @@ public class PauseManager : MonoBehaviour {
 		string sceneName = currentScene.name;
 
 		if (sceneName == "level3") {
-			Application.LoadLevel (3);
+			SceneManager.LoadScene (3);
 		} else if (sceneName == "level5") {
-			Application.LoadLevel (5);
+			SceneManager.LoadScene (5);
 		} else {
-			Application.LoadLevel (1);
+			SceneManager.LoadScene (1);
 		}
     }
 
     // go to main menu
     public void ExitToMain(){
-        Application.LoadLevel(0);
+        SceneManager.LoadScene(0);
     }
 
 

@@ -243,7 +243,7 @@ public class GameManager : MonoBehaviour
 
     void LoadEndGame(){
         Cursor.visible = true;
-        Application.LoadLevel ("WinScreen"); //testing now
+        SceneManager.LoadScene ("WinScreen"); //testing now
     }
 
 
@@ -276,12 +276,12 @@ public class GameManager : MonoBehaviour
             }
             else if (currentLevel == 2) {
                 Cursor.visible = true;
-                Application.LoadLevel ("TwoToThreeScreen"); //testing now
+                SceneManager.LoadScene ("TwoToThreeScreen"); //testing now
                 //currentLevel = 3;
             }
             else {
                 Cursor.visible = true;
-                Application.LoadLevel ("OneToTwoScreen"); //testing now
+                SceneManager.LoadScene ("OneToTwoScreen"); //testing now
                 //currentLevel = 2;
             }
         }

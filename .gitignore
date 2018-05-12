@@ -5,11 +5,15 @@ Game/[Bb]uilds/
 
 Game/[Ll]ibrary/
 
-Game/Assets/AssetStoreTools*
-Game/Assets/Assets
-Game/Assets/DynaMob
-Game/Assets/Materials/
-Game/Assets/LowPoly Environment Pack/
+Game/Assets/*
+!Game/Assets/Scripts
+#!Game/Assets/Scenes
+
+#Game/Assets/AssetStoreTools*
+#Game/Assets/Assets
+#Game/Assets/DynaMob
+#Game/Assets/Materials/
+#Game/Assets/LowPoly Environment Pack/
 
 # Visual Studio 2015 cache directory
 /.vs/

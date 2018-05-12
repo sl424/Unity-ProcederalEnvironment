@@ -10,20 +10,21 @@ public class CameraManager : MonoBehaviour
 
     void Start ()
     {
-        FirstPersonCamera.gameObject.active = false;
-        ThirdPersonCamera.gameObject.active = true;
-        crosshair.gameObject.active = false;
+        //FirstPersonCamera.gameObject.SetActive(false);
+        FirstPersonCamera.gameObject.SetActive(true);
+        ThirdPersonCamera.gameObject.SetActive(true);
+        crosshair.gameObject.SetActive(false);
         //viewIsThird = true;
             if (!viewIsThird) {
-                FirstPersonCamera.gameObject.active = true;
-                ThirdPersonCamera.gameObject.active = false;
-                crosshair.gameObject.active = true;
+                FirstPersonCamera.gameObject.SetActive(true);
+                ThirdPersonCamera.gameObject.SetActive(false);
+                crosshair.gameObject.SetActive(true);
                 Cursor.visible = false; 
             }
             else {
-                FirstPersonCamera.gameObject.active = false;
-                ThirdPersonCamera.gameObject.active = true;
-                crosshair.gameObject.active = false;
+                FirstPersonCamera.gameObject.SetActive(false);
+                ThirdPersonCamera.gameObject.SetActive(true);
+                crosshair.gameObject.SetActive(false);
             }
     }
 
@@ -34,15 +35,15 @@ public class CameraManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.T)) {
             if (viewIsThird) {
-                FirstPersonCamera.gameObject.active = true;
-                ThirdPersonCamera.gameObject.active = false;
-                crosshair.gameObject.active = true;
+                FirstPersonCamera.gameObject.SetActive(true);
+                ThirdPersonCamera.gameObject.SetActive(false);
+                crosshair.gameObject.SetActive(true);
                 Cursor.visible = false; 
             }
             else {
-                FirstPersonCamera.gameObject.active = false;
-                ThirdPersonCamera.gameObject.active = true;
-                crosshair.gameObject.active = false;
+                FirstPersonCamera.gameObject.SetActive(false);
+                ThirdPersonCamera.gameObject.SetActive(true);
+                crosshair.gameObject.SetActive(false);
             }
             viewIsThird = !viewIsThird;
         }

@@ -114,7 +114,7 @@ public class MapGenerator : MonoBehaviour {
             //connect path enemy spawn points to the player
             int flipx;
             int flipy;
-            int tempmid;
+            //int tempmid;
 
             if (spx+midx < midx ) {flipx = 1;} else { flipx = -1;}
             if (spy+midy < midy ) {flipy = 1;} else { flipy = -1;}
